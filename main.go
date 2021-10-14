@@ -22,7 +22,8 @@ func generate(gen *protogen.Plugin) error {
 }
 
 func generateFile(gen *protogen.Plugin, f *protogen.File) {
-	if len(f.Enums) == 0 {
+	allEnums := allDefinedEnums(f)
+	if len(allEnums) == 0 {
 		return
 	}
 	pkg := string(f.Desc.Package())
@@ -33,7 +34,7 @@ func generateFile(gen *protogen.Plugin, f *protogen.File) {
 	g.P("package ", f.GoPackageName)
 	g.P()
 
-	for _, enum := range f.Enums {
+	for _, enum := range allEnums {
 		g.P("const (")
 		for _, val := range enum.Values {
 			if val.Desc.Options().(*descriptorpb.EnumValueOptions).GetDeprecated() {
@@ -44,6 +45,15 @@ func generateFile(gen *protogen.Plugin, f *protogen.File) {
 		g.P(")")
 		g.P()
 	}
+}
+
+func allDefinedEnums(f *protogen.File) []*protogen.Enum {
+	var res []*protogen.Enum
+	res = append(res, f.Enums...)
+	for _, m := range f.Messages {
+		res = append(res, m.Enums...)
+	}
+	return res
 }
 
 func golangValue(pkgName string, e *protogen.EnumValue) string {
