@@ -5,8 +5,8 @@ jobs:
     - image: circleci/golang:1
     steps:
       - checkout
-      - run: go test ./...
-      - run: go build .
+      - run: make all generate
+      - run: git add --all && git diff --staged --exit-code
 
 workflows:
   version: 2
