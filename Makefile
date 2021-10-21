@@ -26,4 +26,5 @@ all: $(LINTER) lint test install
 
 .PHONY: generate
 generate:
+	go install google.golang.org/protobuf/cmd/protoc-gen-go
 	$(BUILDENV) go generate ./...
