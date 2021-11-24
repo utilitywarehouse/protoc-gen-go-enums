@@ -48,23 +48,25 @@ func newFileEnumGenerator(f *protogen.File, gen *protogen.Plugin) *fileEnumGener
 }
 
 func (eg *fileEnumGenerator) Generate() {
-	if !eg.hasEnums() {
-		return
-	}
-
 	eg.gf = eg.gen.NewGeneratedFile(eg.f.GeneratedFilenamePrefix+".pb.enums.go", eg.f.GoImportPath)
 	eg.writeHeader()
 
+	var seen int
 	for _, enum := range eg.f.Enums {
-		eg.processEnum(enum)
+		seen += eg.processEnum(enum)
 	}
 
 	if includeNested {
 		for _, m := range eg.f.Messages {
 			for _, enum := range m.Enums {
-				eg.processEnum(enum)
+				seen += eg.processEnum(enum)
 			}
 		}
+	}
+
+	if seen == 0 {
+		// No enums processed
+		eg.gf.Skip()
 	}
 }
 
@@ -76,23 +78,10 @@ func (eg *fileEnumGenerator) writeHeader() {
 	eg.gf.P()
 }
 
-func (eg *fileEnumGenerator) hasEnums() bool {
-	if len(eg.f.Enums) > 0 {
-		return true
-	}
-	for _, m := range eg.f.Messages {
-		if len(m.Enums) > 0 {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (eg *fileEnumGenerator) processEnum(enum *protogen.Enum) {
+func (eg *fileEnumGenerator) processEnum(enum *protogen.Enum) (seen int) {
 	if hasClash, clashing := eg.hasConstClash(enum); hasClash {
 		println(fmt.Sprintf("skipped generating constants for enum %v as it would duplicate constant %s", enum.Desc.FullName(), clashing))
-		return
+		return seen
 	}
 
 	eg.gf.P("const (")
@@ -103,10 +92,13 @@ func (eg *fileEnumGenerator) processEnum(enum *protogen.Enum) {
 			eg.gf.P("// Deprecated: Do not use.")
 		}
 		eg.gf.P(c, " = ", eg.golangValue(v))
+
+		seen++
 	}
 	eg.gf.P(")")
 	eg.gf.P()
 
+	return seen
 }
 
 func (eg *fileEnumGenerator) hasConstClash(enum *protogen.Enum) (bool, string) {
