@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package example;
+
+option go_package = "github.com/utilitywarehouse/protoc-gen-go-enums/example/conflictingenums";
+
+enum RootEnum {
+  UNKNOWN = 0;
+  VAL1 = 1;
+}
+
+message SampleMessage1 {
+  enum InnerEnum {
+    UNKNOWN = 0;
+    VAL2 = 1;
+  }
+}
+
+message SampleMessage2 {
+  enum InnerEnum {
+    UNKNOWN = 0;
+    VAL3 = 1;
+  }
+}

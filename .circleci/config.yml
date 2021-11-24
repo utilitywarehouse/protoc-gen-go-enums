@@ -2,11 +2,20 @@ version: 2
 jobs:
   build:
     docker:
-    - image: circleci/golang:1
+    - image: cimg/go:1.17
     steps:
+      - run:
+          command: |
+            protoc_version=3.17.3
+            archive=protoc-${protoc_version}-linux-x86_64
+            curl -O -L https://github.com/protocolbuffers/protobuf/releases/download/v${protoc_version}/$archive.zip
+            sudo unzip -d '/usr/local' $archive.zip 'bin/*' 'include/*'
+            sudo chmod +x /usr/local/bin/protoc
+            rm -rf $archive.zip
+          name: '[protobuf] Install'
       - checkout
-      - run: go test ./...
-      - run: go build .
+      - run: PATH=$PATH:$GOBIN make all generate
+      - run: git add example --all && git diff --exit-code --staged example
 
 workflows:
   version: 2
