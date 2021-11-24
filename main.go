@@ -8,8 +8,21 @@ import (
 	"google.golang.org/protobuf/types/descriptorpb"
 )
 
+var includeNested bool
+
 func main() {
-	protogen.Options{}.Run(generate)
+	protogen.Options{
+		ParamFunc: func(name, value string) error {
+			switch name {
+			case "include_nested":
+				switch value {
+				case "true", "yes", "y", "1":
+					includeNested = true
+				}
+			}
+			return nil
+		},
+	}.Run(generate)
 }
 
 func generate(gen *protogen.Plugin) error {
@@ -46,12 +59,13 @@ func (eg *fileEnumGenerator) Generate() {
 		eg.processEnum(enum)
 	}
 
-	for _, m := range eg.f.Messages {
-		for _, enum := range m.Enums {
-			eg.processEnum(enum)
+	if includeNested {
+		for _, m := range eg.f.Messages {
+			for _, enum := range m.Enums {
+				eg.processEnum(enum)
+			}
 		}
 	}
-
 }
 
 func (eg *fileEnumGenerator) writeHeader() {
