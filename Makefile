@@ -3,6 +3,7 @@ install:
 
 generate: build
 build:
+	go install ./...
 	buf generate
 
 lint:
