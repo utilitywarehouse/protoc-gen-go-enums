@@ -18,6 +18,8 @@ jobs:
         env:
           BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
         run: make generate
+      - name: Check code compiles
+        run: go test -v -race ./... 
       - name: Check for changes
         run: git diff --exit-code
   mod:
