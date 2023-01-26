@@ -21,7 +21,7 @@ jobs:
       - name: Check code compiles
         run: go test -v -race ./... 
       - name: Check for changes
-        run: git diff --exit-code
+        run: git add example --all && git diff --exit-code --staged example
   mod:
     runs-on: ubuntu-latest
     steps:
