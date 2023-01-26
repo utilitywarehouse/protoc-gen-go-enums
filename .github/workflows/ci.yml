@@ -1,33 +1,38 @@
 name: ci
 on:
   push:
-env:
-  BUF_VERSION: "1.0.0-rc12"
-  GO_VERSION: "^1.17"
 jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
-      - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
         with:
-          go-version: ${{ env.GO_VERSION }}
-      - uses: bufbuild/buf-setup-action@v0.7.0
-        with:
-          version: ${{ env.BUF_VERSION }}
-      - uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: go-${{ env.GO_VERSION }}-proto_generate-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            go-${{ env.GO_VERSION }}-proto_generate-
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Install tools
+        run: make install
       - name: Generate protofiles
-        run: make ci
+        env:
+          BUF_TOKEN: ${{ secrets.BUF_TOKEN }}
+        run: make generate
       - name: Check code compiles
         run: go test -v -race ./... 
       - name: Check for changes
         run: git add example --all && git diff --exit-code --staged example
+  mod:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Go
+        uses: actions/setup-go@v3
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Tidy modules
+        run: go mod tidy
+      - name: Check for changes
+        run: git add . && git diff --staged --exit-code
