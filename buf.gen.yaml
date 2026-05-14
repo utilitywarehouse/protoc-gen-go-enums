@@ -1,8 +1,8 @@
-version: v1
+version: v2
 plugins:
-  - remote: buf.build/protocolbuffers/plugins/go:v1.27.1-1
+  - remote: buf.build/protocolbuffers/go
     out: .
     opt: paths=source_relative
-  - name: go-enums
+  - local: protoc-gen-go-enums
     out: .
     opt: paths=source_relative
