@@ -4,7 +4,7 @@ go 1.25.6
 
 require (
 	github.com/bufbuild/buf v1.69.0
-	google.golang.org/protobuf v1.36.11
+	google.golang.org/protobuf v1.36.12
 )
 
 require (
